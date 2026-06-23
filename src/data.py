@@ -179,7 +179,7 @@ def _finalize(df: pd.DataFrame) -> pd.DataFrame:
 def add_split_labels(df: pd.DataFrame) -> pd.DataFrame:
     """Tag each row with 'train' / 'val' / 'test' / NaN per SPLITS boundaries."""
     df = df.copy()
-    df["split"] = np.nan
+    df["split"] = pd.Series([None] * len(df), index=df.index, dtype="object")
     for name, (lo, hi) in SPLITS.items():
         mask = (df["date"] >= pd.Timestamp(lo)) & (df["date"] <= pd.Timestamp(hi))
         df.loc[mask, "split"] = name
