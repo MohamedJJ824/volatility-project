@@ -10,8 +10,12 @@ data/processed/
 
 # MLflow + checkpoints
 experiments/mlruns/
+experiments/mlflow.db
+experiments/mlartifacts/
+experiments/.trash/
 experiments/checkpoints/
 mlruns/
+mlflow.db
 
 # Notebook checkpoints
 .ipynb_checkpoints/

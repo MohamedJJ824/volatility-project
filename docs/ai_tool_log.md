@@ -22,3 +22,8 @@ For each entry:
 **Task:** Brainstormed project ideas from the IE412 brief, scoped the multi-timescale volatility project, produced `PROJECT_PLAN.md` and the `phase-documentation` skill.
 **Verification:** Reviewed scope against the rubric (problem definition, motivation, method, data, results, discussion). Cross-checked the 36-hour budget against the actual deadline. Plan to verify each implementation phase as it's built.
 
+### 2026-06-24 05:40, Phase 0 (setup)
+**Tool:** Claude Code (claude-opus-4-8)
+**Task:** Built the repo skeleton, requirements.txt, .gitignore, a repo-local venv, installed all dependencies, initialized local git, and authored src/data.py.
+**Verification:** Ran the import success check (`import torch, arch, yfinance, mlflow` -> ok), recorded all key package versions, smoke-tested the MLflow SQLite backend (create/log/delete an experiment), and confirmed via git status that environment and data artifacts are gitignored.
+
