@@ -1,0 +1,14 @@
+numpy
+pandas
+scipy
+scikit-learn
+torch
+arch
+statsmodels
+yfinance
+pyarrow
+mlflow
+matplotlib
+seaborn
+pytest
+jupyter

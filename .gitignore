@@ -1,0 +1,33 @@
+# Environments
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+
+# Data (regenerable from src/data.py)
+data/raw/
+data/processed/
+
+# MLflow + checkpoints
+experiments/mlruns/
+experiments/checkpoints/
+mlruns/
+
+# Notebook checkpoints
+.ipynb_checkpoints/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# LaTeX build artifacts
+report/*.aux
+report/*.log
+report/*.out
+report/*.toc
+report/*.bbl
+report/*.blg
+report/*.synctex.gz
+report/*.fls
+report/*.fdb_latexmk
