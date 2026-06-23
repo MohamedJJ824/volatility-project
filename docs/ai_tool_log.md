@@ -48,3 +48,8 @@ For each entry:
 **Task:** Implemented src/models.py (DualResTCNNLSTM ported from the ADDIM HAR architecture) and src/train.py (windowing, train-only standardisation, Adam + cosine schedule, early stopping, MLflow logging, checkpoint), trained the model on SPX with seed 42, and produced the training-curves figure.
 **Verification:** Checked the parameter count and that padding preserves window length; confirmed train loss decreased and early stopping selected the best validation epoch (27); scored val/test with the same evaluate.py used for baselines so the information set and target match exactly; inspected the training-curve figure.
 
+### 2026-06-24 07:20, Phase 4 (evaluation)
+**Tool:** Claude Code (claude-opus-4-8)
+**Task:** Implemented the Diebold-Mariano test in evaluate.py, ran pairwise DM tests across the three models, generated the four report figures (headline analogy, predictions, metrics table, robustness/ablation), and added two evaluation-driven experiments beyond the cut: a 5-seed robustness sweep and a short/long branch ablation.
+**Verification:** Checked DM statistic signs against the metric ordering and QLIKE non-negativity; confirmed all five robustness seeds reuse the identical pipeline and land within a 0.005 RMSE band (5/5 beat HAR-RV on RMSE, 1/5 on QLIKE), which corrected an overstated single-seed QLIKE claim; verified the ablation variants differ only in active branches; visually inspected every figure.
+

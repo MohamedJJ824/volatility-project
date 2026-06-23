@@ -46,23 +46,30 @@ class DualResTCNNLSTM(nn.Module):
     """Short (5-day) and long (22-day) TCN branches fused through a single LSTM step."""
 
     def __init__(self, short_window: int = 5, long_window: int = 22,
-                 tcnn_channels=(32, 64), lstm_hidden: int = 64, dropout: float = 0.1):
+                 tcnn_channels=(32, 64), lstm_hidden: int = 64, dropout: float = 0.1,
+                 branches: str = "both"):
         super().__init__()
+        assert branches in ("both", "short", "long")
+        self.branches = branches
         self.short_window = short_window
         self.long_window = long_window
         self.short_branch = TCNBranch(1, tcnn_channels, dropout=dropout)
         self.long_branch = TCNBranch(1, tcnn_channels, dropout=dropout)
-        fused = self.short_branch.out_channels + self.long_branch.out_channels
+        c = self.short_branch.out_channels
+        fused = 2 * c if branches == "both" else c
         self.lstm = nn.LSTM(input_size=fused, hidden_size=lstm_hidden, batch_first=True)
         self.head = nn.Sequential(
             nn.Linear(lstm_hidden, 32), nn.ReLU(), nn.Dropout(dropout), nn.Linear(32, 1)
         )
 
     def forward(self, x_short: torch.Tensor, x_long: torch.Tensor) -> torch.Tensor:
-        s = self.short_branch(x_short)                  # (B, C)
-        l = self.long_branch(x_long)                    # (B, C)
-        fused = torch.cat([s, l], dim=1).unsqueeze(1)   # (B, 1, 2C): sequence of length 1
-        out, _ = self.lstm(fused)                       # (B, 1, H)
+        if self.branches == "both":
+            feat = torch.cat([self.short_branch(x_short), self.long_branch(x_long)], dim=1)
+        elif self.branches == "short":
+            feat = self.short_branch(x_short)
+        else:
+            feat = self.long_branch(x_long)
+        out, _ = self.lstm(feat.unsqueeze(1))           # (B, 1, F): sequence of length 1
         return self.head(out[:, -1, :]).squeeze(-1)     # (B,)
 
     def count_params(self) -> int:

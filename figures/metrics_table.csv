@@ -1,0 +1,4 @@
+model,test_log_rmse,test_qlike,dm_p_vs_har_se
+GARCH,0.884,0.454,0.000*
+HAR-RV,0.835,0.445,-
+TCNN-LSTM,0.823,0.424,0.013*
