@@ -43,3 +43,8 @@ For each entry:
 **Task:** Wrote src/evaluate.py (RMSE, Patton QLIKE) and src/baselines.py (HAR-RV OLS, GARCH(1,1) with train-only level calibration), fitted both for SPX, and logged coefficients and metrics to the MLflow "baselines" experiment. After the MEDIUM CUT, scoped the run to SPX and regenerated a clean store.
 **Verification:** Confirmed HAR-RV slopes are positive and sum to 0.93 (Corsi regularity) and GARCH persistence is 0.98; ran a benchmark diagnostic (HAR beats climatology and random walk on every split) to establish the RMSE floor is proxy noise; checked QLIKE non-negativity; confirmed MLflow holds exactly the two expected SPX runs.
 
+### 2026-06-24 06:45, Phase 3 (neural)
+**Tool:** Claude Code (claude-opus-4-8)
+**Task:** Implemented src/models.py (DualResTCNNLSTM ported from the ADDIM HAR architecture) and src/train.py (windowing, train-only standardisation, Adam + cosine schedule, early stopping, MLflow logging, checkpoint), trained the model on SPX with seed 42, and produced the training-curves figure.
+**Verification:** Checked the parameter count and that padding preserves window length; confirmed train loss decreased and early stopping selected the best validation epoch (27); scored val/test with the same evaluate.py used for baselines so the information set and target match exactly; inspected the training-curve figure.
+
