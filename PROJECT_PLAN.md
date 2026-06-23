@@ -162,7 +162,7 @@ Port the `HybridTCNNLSTM` class from the ADDIM repo as the starting point. Adapt
 
 ### 3b: Training loop
 2. `src/train.py`: standard PyTorch loop, Adam optimizer (lr 1e-3 with cosine schedule), early stopping on val RMSE (patience 15), batch size 64, max 200 epochs. MLflow logs: hyperparams, train/val loss per epoch, final metrics, model artifact.
-3. Pool all assets into a single training set (one model trained on SPX+FTSE+N225+DAX). Asset-specific models are a stretch goal in the cut list.
+3. Train a single model on the SPX training split (MEDIUM CUT: one asset).
 
 ### 3c: Runs
 4. Dual-res TCNN-LSTM: single seed (42). No multi-seed averaging and no hyperparameter mini-sweep. Total runs: 1.
