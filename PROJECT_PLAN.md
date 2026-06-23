@@ -3,13 +3,13 @@
 **Author:** Mohamed Diallo
 **Course:** IE412 AI for Finance, UNIST Spring 2026
 **Deadline:** June 24, 2026, 24:00 KST
-**Working budget:** ~36 hours from kickoff
+**Working budget:** ~10 hours from kickoff
 
 ---
 
 ## North star (one paragraph)
 
-Corsi's HAR-RV model (2009) forecasts realized volatility by linearly combining daily, weekly, and monthly RV averages. That hand-engineered multi-timescale decomposition is conceptually identical to the dual-resolution TCNN-LSTM I published for Human Activity Recognition (CEA 2026), which combines a short-context branch (2 minutes) and a long-context branch (2 hours). This project transfers that architecture to financial volatility forecasting. Four models compete: GARCH(1,1), HAR-RV, vanilla LSTM, and the dual-resolution TCNN-LSTM. Evaluation is both statistical (RMSE, QLIKE, Diebold-Mariano tests) and decision-focused (vol-targeting backtest with Sharpe and drawdown). The narrative ties prediction quality to decision quality, which strengthens the AOS application and reuses my published architecture in a new domain.
+Corsi's HAR-RV model (2009) forecasts realized volatility by linearly combining daily, weekly, and monthly RV averages. That hand-engineered multi-timescale decomposition is conceptually identical to the dual-resolution TCNN-LSTM I published for Human Activity Recognition (CEA 2026). This project transfers that architecture to financial volatility forecasting on SPX. Three models compete: GARCH(1,1), HAR-RV, and the dual-resolution TCNN-LSTM. Evaluation is statistical: RMSE, QLIKE, and Diebold-Mariano tests. The narrative ties the architectural transfer story to a focused empirical comparison and reuses my published architecture in a new domain.
 
 ---
 
@@ -29,10 +29,10 @@ Corsi's HAR-RV model (2009) forecasts realized volatility by linearly combining 
 
 A submission counts as successful if all of the following hold:
 
-- A 6 to 8 page PDF report is submitted by June 24, 22:00 KST (2 hour safety buffer).
+- A 5 to 6 page PDF report is submitted by June 24, 22:00 KST (2 hour safety buffer).
 - The report contains all six rubric sections: problem definition, motivation, proposed method, data and implementation, results, discussion.
-- At least three of the four models produce reportable numbers on the test set.
-- At least one statistical evaluation (RMSE or QLIKE) and one decision-focused evaluation (backtest) are reported.
+- At least two of the three models produce reportable numbers on the test set.
+- RMSE and QLIKE are both reported, with Diebold-Mariano significance tests between models.
 - The conceptual analogy between HAR-RV and the TCNN-LSTM is made explicit with a figure.
 - The GitHub repo is public with a README that leads with figures.
 
@@ -60,8 +60,7 @@ volatility-project/
 │   ├── baselines.py             # GARCH, HAR-RV
 │   ├── models.py                # LSTM, TCNN-LSTM
 │   ├── train.py                 # training loop with MLflow
-│   ├── evaluate.py              # RMSE, QLIKE, DM tests
-│   └── backtest.py              # vol-targeting backtest
+│   └── evaluate.py              # RMSE, QLIKE, DM tests
 ├── notebooks/
 │   └── 01_eda.ipynb
 ├── experiments/                 # MLflow artifacts
@@ -104,11 +103,11 @@ Each phase has: **Objective**, **Tasks**, **Deliverables**, **Success check**, *
 
 ---
 
-## Phase 1: Data (2 to 3 hours, HARD CAP 4 HOURS)
+## Phase 1: Data (1.5 to 2 hours, HARD CAP 3 HOURS)
 
-**Objective.** Clean daily log realized variance series for 3 to 4 major indices, split into train/val/test, persisted to parquet.
+**Objective.** Clean daily log realized variance series for SPX, split into train/val/test, persisted to parquet.
 
-**Primary plan.** Oxford-Man Institute Realized Library (5-min pre-computed RV, free academic access). Pull SPX (.SPX), FTSE (.FTSE), N225 (.N225), DAX (.GDAXI). Use the 5-min RV series (`rv5` column).
+**Primary plan.** Oxford-Man Institute Realized Library (5-min pre-computed RV, free academic access). Pull SPX (.SPX). Use the 5-min RV series (`rv5` column).
 
 **Fallback plan.** If Oxford-Man is down, schema-broken, or auth-walled by hour 1.5, switch to `yfinance` daily OHLC and compute Garman-Klass range-based volatility as RV proxy. Document the substitution clearly.
 
@@ -122,13 +121,13 @@ Each phase has: **Objective**, **Tasks**, **Deliverables**, **Success check**, *
 
 **Success check.** Log-RV series have no NaNs after cleaning, no extreme outliers (z > 8 should be inspected, not blindly dropped). Persistence (lag-1 AC) should be in roughly [0.5, 0.8] for daily log-RV; if it's near zero, the RV computation is wrong.
 
-**DECISION POINT 1 (hour 1.5).** If Oxford-Man isn't loading cleanly, switch to yfinance + Garman-Klass. Ask user.
+**DECISION POINT 1 (hour 1).** If Oxford-Man isn't loading cleanly, switch to yfinance + Garman-Klass. Ask user.
 
 **Stop for documentation.** Write `docs/journal/phase_1_data.md`. Include the EDA figures and the summary stats table. Draft 3 to 5 sentences of report prose for the "Data" section.
 
 ---
 
-## Phase 2: Classical baselines (2 to 3 hours)
+## Phase 2: Classical baselines (45 minutes)
 
 **Objective.** GARCH(1,1) and HAR-RV fitted per asset, val and test numbers logged in MLflow.
 
@@ -139,7 +138,7 @@ Each phase has: **Objective**, **Tasks**, **Deliverables**, **Success check**, *
 2. `src/evaluate.py`: `rmse(y, yhat)` and `qlike(y_rv, yhat_rv)` (QLIKE on RV space, not log; standard convention).
 3. Run both baselines per asset, log all coefficients and metrics to MLflow under experiment name `baselines`.
 
-**Deliverables.** MLflow experiment with baseline runs. Coefficient tables for HAR-RV per asset (these go in the appendix or as a table in the report).
+**Deliverables.** MLflow experiment with baseline runs. Single-asset coefficient table for HAR-RV (goes in the appendix or as a table in the report).
 
 **Success check.** HAR-RV log-RMSE on validation should be roughly in [0.3, 0.6] for major indices. If it's much larger, RV computation is wrong, fix in Phase 1 before continuing. HAR-RV coefficients should be positive and roughly sum to 1 (Corsi's empirical regularity).
 
@@ -149,15 +148,14 @@ Each phase has: **Objective**, **Tasks**, **Deliverables**, **Success check**, *
 
 ---
 
-## Phase 3: Neural models (6 to 8 hours)
+## Phase 3: Neural models (2 to 3 hours)
 
-**Objective.** Vanilla LSTM and dual-resolution TCNN-LSTM trained, val numbers in MLflow, best checkpoints saved.
+**Objective.** Dual-resolution TCNN-LSTM trained, val numbers in MLflow, best checkpoint saved.
 
 **Tasks.**
 
 ### 3a: Architecture port
 1. `src/models.py`:
-   - `VanillaLSTM(input_size=1, hidden=64, layers=2, dropout=0.2)` taking 22-day windows.
    - `DualResTCNNLSTM(short_window=5, long_window=22, tcnn_channels=[32,64], lstm_hidden=64)`. Two TCNN branches (1D dilated conv blocks, kernel 3, dilations [1,2,4]), each followed by global avg pool, concatenated, fed to a single LSTM cell with one timestep (treat the concatenation as a sequence of length 1), then MLP head outputting scalar log-RV.
 
 Port the `HybridTCNNLSTM` class from the ADDIM repo as the starting point. Adapt: input channels go from sensor count to 1, output goes from class logits to regression scalar, loss changes from CE to MSE.
@@ -167,39 +165,33 @@ Port the `HybridTCNNLSTM` class from the ADDIM repo as the starting point. Adapt
 3. Pool all assets into a single training set (one model trained on SPX+FTSE+N225+DAX). Asset-specific models are a stretch goal in the cut list.
 
 ### 3c: Runs
-4. Vanilla LSTM: 3 seeds (42, 1337, 2024).
-5. Dual-res TCNN-LSTM: 3 seeds, same seeds for fair comparison.
-6. Quick hyperparam check (not a full sweep): try 2 values of `lstm_hidden` (32, 64) and 2 dropout values (0.1, 0.3) for the TCNN-LSTM only. 4 configs × 3 seeds = 12 runs, roughly 90 minutes on CPU, faster on a GPU if available.
+4. Dual-res TCNN-LSTM: single seed (42). No multi-seed averaging and no hyperparameter mini-sweep. Total runs: 1.
 
 **Deliverables.** MLflow experiment `neural`, best checkpoints in `experiments/checkpoints/`.
 
-**Success check.** Vanilla LSTM val log-RMSE should be roughly competitive with HAR-RV (within ±0.05). TCNN-LSTM should be at least competitive; "beats HAR-RV" is the hope but not the success bar.
+**Success check.** TCNN-LSTM val log-RMSE should be roughly competitive with HAR-RV; "beats HAR-RV" is the hope but not the success bar.
 
-**DECISION POINT 3 (hour 14 of total budget).** If by hour 14 no neural model is training cleanly, cut seed averaging (run single seed) and the hyperparam check. If by hour 16 still nothing, drop the TCNN-LSTM and submit with three models (GARCH, HAR-RV, LSTM). Ask user.
+**DECISION POINT 3.** If the TCNN-LSTM is not training cleanly by hour 6, drop it and submit with GARCH + HAR-RV only. Ask user.
 
 **Stop for documentation.** Write `docs/journal/phase_3_neural.md`. Include training curves figure. Draft 6 to 8 sentences of "Method" report prose explicitly drawing the HAR-RV / TCNN-LSTM analogy. This is the most important prose draft of the project.
 
 ---
 
-## Phase 4: Evaluation (3 to 4 hours)
+## Phase 4: Evaluation (1 to 1.5 hours)
 
-**Objective.** Statistical comparison with DM tests, vol-targeting backtest, all figures generated for the report.
+**Objective.** Statistical comparison with DM tests, all figures generated for the report.
 
 **Tasks.**
-1. `src/evaluate.py` extended with `diebold_mariano(e1, e2, h=1, loss='se')`. Run pairwise DM tests across all four models per asset, build a significance matrix.
-2. `src/backtest.py`: vol-targeting strategy. Daily, position size = `target_vol / predicted_vol`, capped at 2x leverage, with a 5 bps cost per turnover. Compute equity curve, Sharpe, max drawdown, turnover, hit rate. Same horizon as test set.
-3. Figures (save as both SVG and PDF for LaTeX):
+1. `src/evaluate.py` extended with `diebold_mariano(e1, e2, h=1, loss='se')`. Run pairwise DM tests across the three models, build a significance matrix.
+2. Figures (save as both SVG and PDF for LaTeX):
    - `fig_har_analogy.svg`: side-by-side diagram of HAR-RV decomposition (daily/weekly/monthly lags) and the dual-resolution TCNN-LSTM branches. **This is the headline figure.** Draw it in matplotlib or just in `tikz` inside the LaTeX if faster.
-   - `fig_predictions.svg`: predicted vs actual log-RV for one asset, test period, all four models on one plot.
-   - `fig_equity_curves.svg`: backtest equity curves for all four strategies + buy-and-hold baseline.
-   - `fig_metrics_table.svg` or LaTeX table: RMSE, QLIKE, Sharpe, MDD per model per asset.
-4. Optional ablation if time allows: short-only branch vs long-only branch vs dual (mirror the ADDIM paper exactly). Cut first if time pressed.
+   - `fig_predictions.svg`: predicted vs actual log-RV for SPX, test period, all three models on one plot.
+   - `fig_metrics_table.svg` or LaTeX table: RMSE, QLIKE per model.
+3. Optional ablation if time allows: short-only branch vs long-only branch vs dual (mirror the ADDIM paper exactly). Cut first if time pressed.
 
 **Deliverables.** All figures in `figures/`, results dictionary in `experiments/final_results.json`.
 
-**Success check.** Numbers stay reasonable (no Sharpe = 50, no negative QLIKE). Sanity check: buy-and-hold Sharpe on SPX 2021-2025 should be roughly 0.5 to 1.0.
-
-**DECISION POINT 4.** If the backtest produces weird results (e.g. extreme leverage swings, negative Sharpe across all models), drop the backtest entirely and report stats-only. Better to ship a clean econometric study than a broken backtest. Ask user.
+**Success check.** Numbers stay reasonable (no negative QLIKE, RMSE on the same scale as the baselines). DM test statistics should be finite with sensible p-values.
 
 **Negative result script.** If the TCNN-LSTM does not beat HAR-RV on RMSE, the discussion frames this as: "Corsi's linear decomposition is already near-optimal at daily horizons because the underlying signal is approximately log-Gaussian with persistence cleanly captured by three lag aggregates. The multi-timescale prior matters more when the relationship is nonlinear, which suggests intraday horizons, regime-switching periods, or multi-asset cross-section as more promising application domains. The architecture's value in the HAR domain came from nonlinear sensor interactions; financial volatility may not have enough nonlinearity at this horizon to reward the inductive bias." Use this verbatim if needed.
 
@@ -207,21 +199,21 @@ Port the `HybridTCNNLSTM` class from the ADDIM repo as the starting point. Adapt
 
 ---
 
-## Phase 5: Report (6 to 8 hours)
+## Phase 5: Report (3 to 4 hours)
 
-**Objective.** Submit a 6 to 8 page PDF by June 24, 22:00 KST.
+**Objective.** Submit a 5 page PDF by June 24, 22:00 KST.
 
 **Tasks.**
 1. Copy LaTeX template from the CEA 2026 paper.
 2. Assemble sections from the journal prose drafts. The journal entries should make this assembly, not writing.
 3. Sections and target lengths:
    - Abstract (150 words)
-   - Introduction and motivation (1 page)
+   - Introduction and motivation (0.75 page)
    - Related work and the HAR-RV / HAR analogy (0.75 page, includes `fig_har_analogy`)
-   - Method (1.25 pages, includes model architecture details)
-   - Data and implementation (0.75 page)
-   - Results (2 pages, includes 3 figures and the metrics table)
-   - Discussion and limitations (0.75 page)
+   - Method (1 page, includes model architecture details)
+   - Data and implementation (0.5 page)
+   - Results (1.5 pages, includes figures and the metrics table)
+   - Discussion and limitations (0.5 page)
    - Conclusion (0.25 page)
    - References
    - Appendix: hyperparameters, additional figures, AI tool usage statement
@@ -230,7 +222,7 @@ Port the `HybridTCNNLSTM` class from the ADDIM repo as the starting point. Adapt
 
 **Deliverables.** `report/main.pdf` ready for submission.
 
-**Success check.** PDF compiles. Page count between 6 and 8 (excl. refs and appendix). All rubric sections present. Compare against rubric checklist one more time.
+**Success check.** PDF compiles. Page count between 5 and 6 (excl. refs and appendix). All rubric sections present. Compare against rubric checklist one more time.
 
 **Stop for documentation.** Write `docs/journal/phase_5_report.md` capturing what made it into the final draft and what was cut.
 
@@ -257,13 +249,11 @@ Port the `HybridTCNNLSTM` class from the ADDIM repo as the starting point. Adapt
 # DECISION TREE SUMMARY
 
 ```
-Hour 1.5: Data source confirmed (Oxford-Man or yfinance+GK)
-Hour 8:   HAR-RV sanity check passes
-Hour 14:  Neural models training (else cut seed avg + hyperparam)
-Hour 16:  At least one neural model done (else drop TCNN-LSTM)
-Hour 22:  Evaluation complete, figures done
-Hour 32:  Report draft complete
-Hour 36:  Submitted (target 22:00 KST = hour 34 if started morning of June 23)
+Hour 1:   Data source confirmed
+Hour 3:   HAR-RV sanity check passes
+Hour 6:   TCNN-LSTM training (else drop and submit with baselines)
+Hour 7.5: Evaluation complete, figures done
+Hour 10:  Submitted (target 22:00 KST)
 ```
 
 ---
@@ -272,13 +262,9 @@ Hour 36:  Submitted (target 22:00 KST = hour 34 if started morning of June 23)
 
 When time slips, cut in this order. Do not improvise; follow this list.
 
-1. Streamlit dashboard
-2. Ablation study (short-only / long-only / dual)
-3. Hyperparameter mini-sweep (run with defaults instead)
-4. Seed averaging (run with seed 42 only)
-5. Vol-targeting backtest (report stats-only)
-6. Two of the four assets (keep SPX + one other)
-7. TCNN-LSTM model (submit with GARCH + HAR-RV + LSTM and frame as "deep model deferred")
+1. Ablation study
+2. TCNN-LSTM (submit with GARCH + HAR-RV)
+3. One of the two non-headline figures
 
 ---
 

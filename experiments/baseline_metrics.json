@@ -1,0 +1,12 @@
+{
+  "SPX": {
+    "HAR-RV/val/log_rmse": 0.8955199268074973,
+    "HAR-RV/val/qlike": 0.5148963723658333,
+    "GARCH/val/log_rmse": 0.9468936370208246,
+    "GARCH/val/qlike": 0.45740879241025706,
+    "HAR-RV/test/log_rmse": 0.8346087995922804,
+    "HAR-RV/test/qlike": 0.44529217267127985,
+    "GARCH/test/log_rmse": 0.8841515481229798,
+    "GARCH/test/qlike": 0.4544357775361821
+  }
+}

@@ -32,3 +32,14 @@ For each entry:
 **Task:** Implemented src/data.py (Oxford-Man and yfinance Garman-Klass loaders, cleaning, train/val/test splits, summary stats) and notebooks/01_eda.ipynb; built parquet for SPX/FTSE/N225/DAX and two EDA figures.
 **Verification:** Probed both data sources before selecting one; confirmed all four assets' lag-1 autocorrelations fall in the plan's [0.5, 0.8] sanity band; visually inspected the rendered time-series and ACF/PACF figures; checked split-size arithmetic against the date boundaries.
 
+### 2026-06-24 06:10, scope change (MEDIUM CUT)
+**Tool:** Claude Code (claude-opus-4-8)
+**Task:** Edited PROJECT_PLAN.md to reduce scope to the MEDIUM CUT after DECISION POINT 2. The working budget was cut from ~36 to ~10 hours; the project narrowed to SPX only; the Vanilla LSTM and the vol-targeting backtest were dropped; the model set is now GARCH(1,1), HAR-RV, and the dual-resolution TCNN-LSTM; evaluation is statistical only (RMSE, QLIKE, Diebold-Mariano); the report target dropped to 5 to 6 pages.
+**Reason:** At DECISION POINT 2 the HAR-RV validation log-RMSE (0.77 to 0.90) sat above the plan's [0.3, 0.6] band, but diagnostics showed the models were correct (textbook coefficients, HAR beats climatology and random walk on every split) and the gap was caused by the noisier Garman-Klass daily proxy replacing the discontinued Oxford-Man 5-minute RV. Combined with a tightened time budget, the user elected the MEDIUM CUT to ship a focused, clean single-asset statistical comparison rather than a broader study at risk against the deadline.
+**Verification:** Applied each specified edit by exact-string match and grepped the file afterward for residual out-of-scope terms (backtest, Sharpe, four models, multi-seed, hyperparameter sweep); two Vanilla LSTM references outside sections 3a/3c were left in place pending user confirmation and flagged.
+
+### 2026-06-24 06:20, Phase 2 (baselines)
+**Tool:** Claude Code (claude-opus-4-8)
+**Task:** Wrote src/evaluate.py (RMSE, Patton QLIKE) and src/baselines.py (HAR-RV OLS, GARCH(1,1) with train-only level calibration), fitted both for SPX, and logged coefficients and metrics to the MLflow "baselines" experiment. After the MEDIUM CUT, scoped the run to SPX and regenerated a clean store.
+**Verification:** Confirmed HAR-RV slopes are positive and sum to 0.93 (Corsi regularity) and GARCH persistence is 0.98; ran a benchmark diagnostic (HAR beats climatology and random walk on every split) to establish the RMSE floor is proxy noise; checked QLIKE non-negativity; confirmed MLflow holds exactly the two expected SPX runs.
+
