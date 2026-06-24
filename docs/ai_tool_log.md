@@ -53,3 +53,8 @@ For each entry:
 **Task:** Implemented the Diebold-Mariano test in evaluate.py, ran pairwise DM tests across the three models, generated the four report figures (headline analogy, predictions, metrics table, robustness/ablation), and added two evaluation-driven experiments beyond the cut: a 5-seed robustness sweep and a short/long branch ablation.
 **Verification:** Checked DM statistic signs against the metric ordering and QLIKE non-negativity; confirmed all five robustness seeds reuse the identical pipeline and land within a 0.005 RMSE band (5/5 beat HAR-RV on RMSE, 1/5 on QLIKE), which corrected an overstated single-seed QLIKE claim; verified the ablation variants differ only in active branches; visually inspected every figure.
 
+### 2026-06-24 09:05, Phase 5 (report)
+**Tool:** Claude Code (claude-opus-4-8)
+**Task:** Wrote the LaTeX report (report/main.tex) and bibliography (report/refs.bib), generated an SPX-only series figure, and compiled main.pdf (7 pages). Extracted the course rubric and the CEA 2026 paper citation/architecture from the user-supplied PDFs.
+**Verification:** Rendered the image-based HAR paper to confirm authorship (the author is second of five co-authors, so the report says "co-proposed") and the 2-minute/2-hour dual-resolution design; confirmed a clean compile with no undefined references or missing figures; visually inspected the rendered pages; cross-checked every reported number against experiments/final_results.json and the phase journals.
+
